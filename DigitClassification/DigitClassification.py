@@ -39,8 +39,14 @@ def main():
         i = i + 1
     trainX = train.reshape(train.shape[0],train.shape[1]*train.shape[2],1)
     testX = test.reshape(test.shape[0],test.shape[1]*test.shape[2],1)
-    #network=NN()
-    NN.trainNN(trainX,trainY)
+    w1,b1,w2,b2=NN.trainNN(trainX,trainY)
+    '''X=testX[0]
+    print(X.shape)
+    Y=testY[0]
+    print(Y.shape)
+    _,a=NN.forwardProp(X,w1,b1,w2,b2)
+    print("y:", Y)
+    print("a: ", a)'''
 
 if __name__ == "__main__":
     sys.exit(int(main() or 0))
