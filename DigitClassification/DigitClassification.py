@@ -7,18 +7,6 @@ from sklearn.utils import shuffle
 
 
 def main():
-    '''check how shuffle works
-    X=np.array([[[0],[0],[3],[4],[3],[4],[3],[0],[0]],[[0],[0],[5],[4],[3],[4],[3],[0],[0]],[[0],[0],[6],[4],[3],[4],[3],[0],[0]],[[0],[0],[2],[4],[3],[4],[3],[0],[0]],[[0],[0],[9],[4],[3],[4],[3],[0],[0]]])
-    print(X.shape)
-    Y=np.zeros((5,10,1))
-    Y[0,3]=1
-    Y[1,5]=1
-    Y[2,6]=1
-    Y[3,2]=1
-    Y[4,9]=1
-    for i in range(5):
-        X,Y=shuffle(X,Y)
-        print(X)'''
     train = np.empty((1000,28,28),dtype='float64')
     trainY = np.zeros((1000,10,1))
     test = np.empty((10000,28,28),dtype='float64')
@@ -40,11 +28,13 @@ def main():
     trainX = train.reshape(train.shape[0],train.shape[1]*train.shape[2],1)
     testX = test.reshape(test.shape[0],test.shape[1]*test.shape[2],1)
     w1,b1,w2,b2=NN.trainNN(trainX,trainY)
+    accuracy = NN.getAccuracy(testX,testY,w1,b1,w2,b2)
+    print("Accuracy of Classification is ",accuracy,'%')
     '''X=testX[0]
     print(X.shape)
     Y=testY[0]
     print(Y.shape)
-    _,a=NN.forwardProp(X,w1,b1,w2,b2)
+    _,a=NN.forwardProp(w1,b1,w2,b2,X)
     print("y:", Y)
     print("a: ", a)'''
 

@@ -14,8 +14,23 @@ class NN(object):
         a2=NN.sigmoid(s2)
         return a1,a2
 
+    def getAccuracy(X,Y,w1,b1,w2,b2):
+        rightCount=0
+        testsNum=X.shape[0]
+        for i in range(testsNum):
+            xi=X[i]
+            yi=Y[i]
+            _,a2=NN.forwardProp(w1,b1,w2,b2,xi)
+            maxIdx=np.argmax(a2)
+            if(yi[maxIdx]==1):
+                rightCount+=1
+        accuracy=(rightCount/testsNum)*100
+        return accuracy
+
+                #Returns the indices of the min values along an axis.
+
     def computeLoss(a2,yi):
-        loss=(0.5*((a2-yi)*(a2-yi))).sum()
+        loss=(((a2-yi)*(a2-yi))).sum()
         return loss
       
 
@@ -23,7 +38,7 @@ class NN(object):
         #s2 and a2 are 10x1, s1 and a1 are 100x1, xi is 784x1, yi is 10x1
         #should return partial derivatives of w1,b1,w2,b2 with respect to loss
         # w2 is 10x100, b2 is 10x1, delta1 is 100x1, w1 is 100x784,b1 is 100x1
-        delta2=(a2-yi)*a2*(1-a2)#delta2 is 10x1
+        delta2=2*(a2-yi)*a2*(1-a2)#delta2 is 10x1
         dw2=delta2@a1.T #10x100
         db2=delta2 #delta2*1
         delta1=(w2.T@delta2)*a1*(1-a1)
@@ -32,12 +47,12 @@ class NN(object):
         return dw1,db1,dw2,db2
 
     def trainNN(X,Y,alpha=0.1): #X is (1000x784x1), Y is (1000x10x1)
-        w1 = np.random.uniform(-0.12,0.12,(100,784))
-        b1 = np.random.uniform(-0.12,0.12,(100,1))
-        w2 = np.random.uniform(-0.12,0.12,(10,100))
-        b2 = np.random.uniform(-0.12,0.12,(10,1))
+        w1 = np.random.uniform(-0.1,0.1,(100,784))
+        b1 = np.random.uniform(-0.1,0.1,(100,1))
+        w2 = np.random.uniform(-0.1,0.1,(10,100))
+        b2 = np.random.uniform(-0.1,0.1,(10,1))
         #regularization parameter:lambda
-        epochsNum=50
+        epochsNum=100
         samplesNum=X.shape[0]
         for j in range(epochsNum):
             X,Y=shuffle(X,Y)
@@ -54,7 +69,7 @@ class NN(object):
                 b1=b1-alpha*(db1)
                 w2=w2-alpha*(dw2)
                 b2=b2-alpha*(db2)
-            print("epoch= ", j, "loss= ", loss)
+            print("epoch = ", j, "loss = ", loss)
         return w1,b1,w2,b2    
 
 
