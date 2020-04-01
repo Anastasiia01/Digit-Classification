@@ -4,6 +4,18 @@ import cv2
 import numpy as np
 from NN import NN 
 from sklearn.utils import shuffle
+import matplotlib.pyplot as plt
+
+def plotResult(SGD,miniBatch):
+    x = np.arange(25, 101, 25)
+    plt.plot(x,SGD,linewidth=0.8,c='g',label='SDG')
+    plt.plot(x,miniBatch,linewidth=0.8,c='r',label='mini Batch')
+
+    plt.title('Accuracy of SDG vs mini Batch with 25 Hidden Neurons')
+    plt.xlabel('number of epochs')
+    plt.ylabel('accuracy')
+    plt.legend()
+    plt.show()
 
 
 def main():
@@ -27,9 +39,30 @@ def main():
         i = i + 1
     trainX = train.reshape(train.shape[0],train.shape[1]*train.shape[2],1)
     testX = test.reshape(test.shape[0],test.shape[1]*test.shape[2],1)
-    w1,b1,w2,b2=NN.trainNN(trainX,trainY)
-    accuracy = NN.getAccuracy(testX,testY,w1,b1,w2,b2)
-    print("Accuracy of Classification is ",accuracy,'%')
+    SGD=np.zeros((4,1))
+    miniBatch=np.zeros((4,1))
+    for i in range(4):
+        x=(i+1)*25
+        w1,b1,w2,b2=NN.trainSGD(trainX,trainY,epochsNum=x)
+        SGD[i]= NN.getAccuracy(testX,testY,w1,b1,w2,b2)
+        w1,b1,w2,b2=NN.trainMiniBatch(trainX,trainY,epochsNum=x)
+        miniBatch[i]= NN.getAccuracy(testX,testY,w1,b1,w2,b2)
+    plotResult(SGD,miniBatch)
+    '''x = np.arange(25, 101, 25)
+    plt.plot(x1,SGD,linewidth=0.8,c='g',label='SDG')
+    plt.plot(x1,miniBatch,linewidth=0.8,c='r',label='mini Batch')
+
+    plt.title('Accuracy of SDG vs mini Batch with 25 Hidden Neurons')
+    plt.xlabel('number of epochs')
+    plt.ylabel('accuracy')
+    plt.legend()
+    plt.show()'''
+
+
+
+
+    
+    #print("Accuracy of Classification is ",accuracy,'%')
     '''X=testX[0]
     print(X.shape)
     Y=testY[0]
