@@ -3,20 +3,20 @@ import sys
 import cv2
 import numpy as np
 from NN import NN 
+from NN import ACTIVATION
 from sklearn.utils import shuffle
 import matplotlib.pyplot as plt
 
 def plotResult(SGD,miniBatch):
-    x = np.arange(25, 101, 25)
-    plt.plot(x,SGD,linewidth=0.8,c='g',label='SDG')
-    plt.plot(x,miniBatch,linewidth=0.8,c='r',label='mini Batch')
+    x = np.array([25,50,100,150])
+    plt.scatter(x,SGD,c='g',label='SDG')
+    plt.scatter(x,miniBatch,c='r',label='mini Batch')
 
-    plt.title('Accuracy of SDG vs mini Batch with 25 Hidden Neurons')
+    plt.title('Accuracy of SDG vs mini Batch with 25 Hidden Neurons(sigmoid)')
     plt.xlabel('number of epochs')
     plt.ylabel('accuracy')
     plt.legend()
     plt.show()
-
 
 def main():
     train = np.empty((1000,28,28),dtype='float64')
@@ -39,27 +39,27 @@ def main():
         i = i + 1
     trainX = train.reshape(train.shape[0],train.shape[1]*train.shape[2],1)
     testX = test.reshape(test.shape[0],test.shape[1]*test.shape[2],1)
+
+    '''activation=ACTIVATION(1)
+    w1,b1,w2,b2=NN.trainSGD(trainX,trainY,epochsNum=50,activFunc=activation)
+    accuracy= NN.getAccuracy(testX,testY,w1,b1,w2,b2,activFunc=activation)
+    print("Accuracy of Classification is ",accuracy,'%')'''
+
+
+    #graph accuracy over #epochs
     SGD=np.zeros((4,1))
     miniBatch=np.zeros((4,1))
+    X = np.array([25,50,100,150])
+    activation=ACTIVATION(1)
     for i in range(4):
-        x=(i+1)*25
-        w1,b1,w2,b2=NN.trainSGD(trainX,trainY,epochsNum=x)
+        x =  X[i]
+        w1,b1,w2,b2=NN.trainSGD(trainX,trainY,epochsNum=x,activFunc=activation)
         SGD[i]= NN.getAccuracy(testX,testY,w1,b1,w2,b2)
-        w1,b1,w2,b2=NN.trainMiniBatch(trainX,trainY,epochsNum=x)
+        w1,b1,w2,b2=NN.trainMiniBatch(trainX,trainY,epochsNum=x,activFunc=activation)
         miniBatch[i]= NN.getAccuracy(testX,testY,w1,b1,w2,b2)
+    print("SGD: ",SGD)
+    print("miniBatch: ",miniBatch)
     plotResult(SGD,miniBatch)
-    '''x = np.arange(25, 101, 25)
-    plt.plot(x1,SGD,linewidth=0.8,c='g',label='SDG')
-    plt.plot(x1,miniBatch,linewidth=0.8,c='r',label='mini Batch')
-
-    plt.title('Accuracy of SDG vs mini Batch with 25 Hidden Neurons')
-    plt.xlabel('number of epochs')
-    plt.ylabel('accuracy')
-    plt.legend()
-    plt.show()'''
-
-
-
 
     
     #print("Accuracy of Classification is ",accuracy,'%')

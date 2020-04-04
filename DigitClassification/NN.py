@@ -1,26 +1,49 @@
 import numpy as np
 from sklearn.utils import shuffle
+from enum import Enum
 
-class NN(object):
-       
-    def sigmoid(x):
-        return 1/(1+np.exp(-x))
+class ACTIVATION(Enum):
+    SIGMOID = 1
+    TANH = 2
+    RELU = 3
 
-    def forwardProp(w1,b1,w2,b2,xi):
+class NN(object):      
+    
+    def activationFunc(x,activFunc):
+        if(activFunc.name=='SIGMOID'):
+            return 1/(1+np.exp(-x))
+        elif(activFunc.name=='TANH'):
+            return np.tanh(x)
+        else:#RELU y=x if x>0 and y=0 if x<=0
+            der=np.copy(x)
+            der[x<=0]=0
+            return der
+
+    def forwardProp(w1,b1,w2,b2,xi,activFunc):
         #w1 is 100x784, b1 is 100x1, xi is 784x1, w2 is 10x100, b2 is 10x1
         s1=w1@xi+b1 #100x1
-        a1=NN.sigmoid(s1) #100x1
+        a1=NN.activationFunc(s1, activFunc) #100x1
         s2=w2@a1+b2 #10x1
-        a2=NN.sigmoid(s2)
+        a2=NN.activationFunc(s2, ACTIVATION(1))
         return a1,a2
 
-    def getAccuracy(X,Y,w1,b1,w2,b2):
+    def derOvera1(a1, activFunc):
+        if(activFunc.name=='SIGMOID'):
+            return a1*(1-a1)
+        elif(activFunc.name=='TANH'):
+            return (1-a1**2)
+        else:#RELU' y=1 if x>0 and y=0 if x<=0
+            der=np.zeros(a1.shape)
+            der[a1>0]=1
+            return der
+
+    def getAccuracy(X,Y,w1,b1,w2,b2,activFunc=ACTIVATION(1)):
         rightCount=0
         testsNum=X.shape[0]
         for i in range(testsNum):
             xi=X[i]
             yi=Y[i]
-            _,a2=NN.forwardProp(w1,b1,w2,b2,xi)
+            _,a2=NN.forwardProp(w1,b1,w2,b2,xi,activFunc)
             maxIdx=np.argmax(a2)
             if(yi[maxIdx]==1):
                 rightCount+=1
@@ -34,19 +57,19 @@ class NN(object):
         return loss
       
 
-    def computeDerivatives(xi,yi,a2,a1,w2):
+    def computeDerivatives(xi,yi,a2,a1,w2,activFunc=ACTIVATION(1)):
         #s2 and a2 are 10x1, s1 and a1 are 100x1, xi is 784x1, yi is 10x1
         #should return partial derivatives of w1,b1,w2,b2 with respect to loss
         # w2 is 10x100, b2 is 10x1, delta1 is 100x1, w1 is 100x784,b1 is 100x1
-        delta2=2*(a2-yi)*a2*(1-a2)#delta2 is 10x1
+        delta2=2*(a2-yi)*NN.derOvera1(a2, ACTIVATION(1))#since sigmoid is activation func on output layer
         dw2=delta2@a1.T #10x100
         db2=delta2 #delta2*1
-        delta1=(w2.T@delta2)*a1*(1-a1)
+        delta1=(w2.T@delta2)*NN.derOvera1(a1, activFunc)
         dw1=delta1@xi.T
         db1=delta1 #delta1*1
         return dw1,db1,dw2,db2
 
-    def trainSGD(X,Y,alpha=0.1,epochsNum=100): #X is (1000x784x1), Y is (1000x10x1)
+    def trainSGD(X,Y,alpha=0.1,epochsNum=100,activFunc=ACTIVATION(1)): #X is (1000x784x1), Y is (1000x10x1)
         numNeuronsLayer1 = 25
         numNeuronsLayer2 = 10
         w1 = np.random.uniform(-0.1,0.1,(numNeuronsLayer1,784))
@@ -61,10 +84,10 @@ class NN(object):
                 xi=X[i]#same as X[i,:]
                 yi=Y[i]
                 #compute forward pass
-                a1,a2 = NN.forwardProp(w1,b1,w2,b2,xi)
+                a1,a2 = NN.forwardProp(w1,b1,w2,b2,xi,activFunc)
                 loss+=NN.computeLoss(a2,yi)
-                dw1,db1,dw2,db2=NN.computeDerivatives(xi,yi,a2,a1,w2)
                 #backpropagation: updating weigths and biases
+                dw1,db1,dw2,db2=NN.computeDerivatives(xi,yi,a2,a1,w2,activFunc)
                 w1=w1-alpha*(dw1)
                 b1=b1-alpha*(db1)
                 w2=w2-alpha*(dw2)
@@ -72,14 +95,13 @@ class NN(object):
             #print("epoch = ", j, "loss = ", loss)
         return w1,b1,w2,b2    
 
-    def trainMiniBatch(X,Y,alpha=0.1,epochsNum=100,batchSize=10): #X is (1000x784x1), Y is (1000x10x1)
+    def trainMiniBatch(X,Y,alpha=0.1,epochsNum=100,batchSize=10,activFunc=ACTIVATION(1)): #X is (1000x784x1), Y is (1000x10x1)
         numNeuronsLayer1 = 25
         numNeuronsLayer2 = 10
         w1 = np.random.uniform(-0.1,0.1,(numNeuronsLayer1,784))
         b1 = np.random.uniform(-0.1,0.1,(numNeuronsLayer1,1))
         w2 = np.random.uniform(-0.1,0.1,(numNeuronsLayer2,numNeuronsLayer1))
         b2 = np.random.uniform(-0.1,0.1,(numNeuronsLayer2,1))
-        #regularization parameter:lambda
         samplesNum=X.shape[0]
         for j in range(epochsNum):
             X,Y=shuffle(X,Y)
@@ -90,12 +112,12 @@ class NN(object):
                 avgdw2=0
                 avgdb2=0
                 for i in range(batchSize):
-                    xi=X[k+i]#same as X[i,:]
+                    xi=X[k+i]#same as X[k+i,:]
                     yi=Y[k+i]
                     #compute forward pass
-                    a1,a2 = NN.forwardProp(w1,b1,w2,b2,xi)
+                    a1,a2 = NN.forwardProp(w1,b1,w2,b2,xi,activFunc)
                     loss+=NN.computeLoss(a2,yi)
-                    dw1,db1,dw2,db2=NN.computeDerivatives(xi,yi,a2,a1,w2)
+                    dw1,db1,dw2,db2=NN.computeDerivatives(xi,yi,a2,a1,w2,activFunc)
                     avgdw1+=dw1
                     avgdb1+=db1
                     avgdw2+=dw2
