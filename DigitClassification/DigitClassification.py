@@ -40,14 +40,17 @@ def main():
     trainX = train.reshape(train.shape[0],train.shape[1]*train.shape[2],1)
     testX = test.reshape(test.shape[0],test.shape[1]*test.shape[2],1)
 
-    '''activation=ACTIVATION(1)
-    w1,b1,w2,b2=NN.trainSGD(trainX,trainY,epochsNum=50,activFunc=activation)
+    activation=ACTIVATION.SIGMOID
+    w1,b1,w2,b2=NN.trainSGD(trainX,trainY,activFunc=activation)
     accuracy= NN.getAccuracy(testX,testY,w1,b1,w2,b2,activFunc=activation)
-    print("Accuracy of Classification is ",accuracy,'%')'''
+    print("Accuracy of Classification is ",accuracy,'%') 
+    w1,b1,w2,b2=NN.trainMiniBatch(trainX,trainY,activFunc=activation)
+    accuracy= NN.getAccuracy(testX,testY,w1,b1,w2,b2,activFunc=activation)
+    print("Accuracy of Classification is ",accuracy,'%')
 
 
     #graph accuracy over #epochs
-    SGD=np.zeros((4,1))
+    '''SGD=np.zeros((4,1))
     miniBatch=np.zeros((4,1))
     X = np.array([25,50,100,150])
     activation=ACTIVATION(1)
@@ -59,7 +62,7 @@ def main():
         miniBatch[i]= NN.getAccuracy(testX,testY,w1,b1,w2,b2)
     print("SGD: ",SGD)
     print("miniBatch: ",miniBatch)
-    plotResult(SGD,miniBatch)
+    plotResult(SGD,miniBatch)'''
 
     
     #print("Accuracy of Classification is ",accuracy,'%')
