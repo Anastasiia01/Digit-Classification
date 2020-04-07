@@ -80,23 +80,25 @@ class NN(object):
         dw1+=reglambda*w1
         return dw1,db1,dw2,db2
 
-    def trainSGD(X,Y,alpha=0.01,epochsNum=100,activFunc=ACTIVATION(1)): #X is (1000x784x1), Y is (1000x10x1)
-        numNeuronsLayer1 = 30
+    def trainSGD(X,Y,alpha=0.01,epochsNum=200,activFunc=ACTIVATION(1)): #X is (1000x784x1), Y is (1000x10x1)
+        numNeuronsLayer1 = 100
         numNeuronsLayer2 = 10
         w1 = np.random.uniform(-0.1,0.1,(numNeuronsLayer1,784))
         b1 = np.random.uniform(-0.1,0.1,(numNeuronsLayer1,1))
         w2 = np.random.uniform(-0.1,0.1,(numNeuronsLayer2,numNeuronsLayer1))
         b2 = np.random.uniform(-0.1,0.1,(numNeuronsLayer2,1))
         samplesNum=X.shape[0]
-
         for j in range(epochsNum):
             X,Y=shuffle(X,Y)
             loss=0
+            
             for i in range(samplesNum):
                 xi=X[i]#same as X[i,:]
                 yi=Y[i]
                 #compute forward pass
                 a1,a2 = NN.forwardProp(w1,b1,w2,b2,xi,activFunc)
+                mask = np.random.binomial(1, 0.8, size=a1.shape)
+                a1=a1*mask
                 loss+=NN.computeLoss(a2,yi,w1,w2)
                 #backpropagation: updating weigths and biases
                 dw1,db1,dw2,db2=NN.computeDerivatives(xi,yi,a2,a1,w2,w1,activFunc)
@@ -104,10 +106,10 @@ class NN(object):
                 b1=b1-alpha*(db1)
                 w2=w2-alpha*(dw2)
                 b2=b2-alpha*(db2)
-            #print("epoch = ", j, "loss = ", loss)
+            print("epoch = ", j, "loss = ", loss)
         return w1,b1,w2,b2    
 
-    def trainMiniBatch(X,Y,alpha=0.01,epochsNum=100,batchSize=10,activFunc=ACTIVATION(1)): #X is (1000x784x1), Y is (1000x10x1)
+    def trainMiniBatch(X,Y,alpha=0.01,epochsNum=200,batchSize=10,activFunc=ACTIVATION(1)): #X is (1000x784x1), Y is (1000x10x1)
         numNeuronsLayer1 = 100
         numNeuronsLayer2 = 10
         w1 = np.random.uniform(-0.1,0.1,(numNeuronsLayer1,784))
@@ -128,6 +130,8 @@ class NN(object):
                     yi=Y[k+i]
                     #compute forward pass
                     a1,a2 = NN.forwardProp(w1,b1,w2,b2,xi,activFunc)
+                    mask = np.random.binomial(1, 0.8, size=a1.shape)
+                    a1=a1*mask
                     loss+=NN.computeLoss(a2,yi,w1,w2)
                     dw1,db1,dw2,db2=NN.computeDerivatives(xi,yi,a2,a1,w2,w1,activFunc)
                     avgdw1+=dw1
@@ -143,7 +147,7 @@ class NN(object):
                 b1=b1-alpha*(avgdb1)
                 w2=w2-alpha*(avgdw2)
                 b2=b2-alpha*(avgdb2)
-            #print("epoch = ", j, "loss = ", loss)
+            print("epoch = ", j, "loss = ", loss)
         return w1,b1,w2,b2    
 
 

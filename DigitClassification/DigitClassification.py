@@ -40,7 +40,7 @@ def main():
     trainX = train.reshape(train.shape[0],train.shape[1]*train.shape[2],1)
     testX = test.reshape(test.shape[0],test.shape[1]*test.shape[2],1)
 
-    activation=ACTIVATION.SIGMOID
+    activation=ACTIVATION.RELU
     w1,b1,w2,b2=NN.trainSGD(trainX,trainY,activFunc=activation)
     accuracy= NN.getAccuracy(testX,testY,w1,b1,w2,b2,activFunc=activation)
     print("Accuracy of Classification is ",accuracy,'%') 
